@@ -11,18 +11,20 @@ import pymorphy3
 morph = pymorphy3.MorphAnalyzer()
 stop_words = set(stopwords.words('russian'))
 
-INPUT_FOLDER = "downloaded_pages"
-TOKENS_FILE = "tokens.txt"
-LEMMAS_FILE = "lemmas.txt"
+INPUT_FOLDER = "../task_1/downloaded_pages"
+TOKENS_FOLDER = "tokens"
+LEMMAS_FOLDER = "lemmas"
+
+os.makedirs(TOKENS_FOLDER, exist_ok=True)
+os.makedirs(LEMMAS_FOLDER, exist_ok=True)
 
 
 def clean_and_tokenize(text):
     text = text.lower()
     text = re.sub(r'[^а-яё\s]', ' ', text)
-
     tokens = text.split()
-
     clean_tokens = []
+
     for token in tokens:
         if len(token) < 2:
             continue
@@ -35,39 +37,38 @@ def clean_and_tokenize(text):
 
         clean_tokens.append(token)
 
-    return clean_tokens
+    return list(set(clean_tokens))
 
+for filename in os.listdir(INPUT_FOLDER):
 
-def main():
-    all_tokens = set()
+    filepath = os.path.join(INPUT_FOLDER, filename)
 
-    for filename in os.listdir(INPUT_FOLDER):
-        filepath = os.path.join(INPUT_FOLDER, filename)
+    if not os.path.isfile(filepath):
+        continue
 
-        if os.path.isfile(filepath):
-            with open(filepath, 'r', encoding='utf-8') as f:
-                text = f.read()
-                tokens = clean_and_tokenize(text)
-                all_tokens.update(tokens)
+    with open(filepath, "r", encoding="utf-8") as f:
+        text = f.read()
 
-    #  Сохраняем список токенов
-    with open(TOKENS_FILE, 'w', encoding='utf-8') as f:
-        for token in sorted(all_tokens):
+    tokens = clean_and_tokenize(text)
+    name = os.path.splitext(filename)[0]
+
+    #  TOKENS
+    tokens_file = os.path.join(TOKENS_FOLDER, f"{name}_tokens.txt")
+
+    with open(tokens_file, "w", encoding="utf-8") as f:
+        for token in sorted(tokens):
             f.write(token + "\n")
 
-    # Группировка по леммам
+    # LEMMAS
     lemma_dict = defaultdict(list)
 
-    for token in all_tokens:
+    for token in tokens:
         lemma = morph.parse(token)[0].normal_form
         lemma_dict[lemma].append(token)
 
-    # Сохраняем леммы
-    with open(LEMMAS_FILE, 'w', encoding='utf-8') as f:
-        for lemma in sorted(lemma_dict.keys()):
-            tokens_line = " ".join(sorted(lemma_dict[lemma]))
-            f.write(f"{lemma} {tokens_line}\n")
+    lemmas_file = os.path.join(LEMMAS_FOLDER, f"{name}_lemmas.txt")
 
-
-if __name__ == "__main__":
-    main()
+    with open(lemmas_file, "w", encoding="utf-8") as f:
+        for lemma in sorted(lemma_dict):
+            token_line = " ".join(sorted(lemma_dict[lemma]))
+            f.write(f"{lemma} {token_line}\n")
