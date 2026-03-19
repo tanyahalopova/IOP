@@ -3,3 +3,5 @@ downloaded_pages
 .idea
 lemmas
 tokens
+tfidf_lemmas
+tfidf_tokens
