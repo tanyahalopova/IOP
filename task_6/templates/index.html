@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Поисковик</title>
+</head>
+<body>
+
+<h1>Поисковая система</h1>
+
+<form method="post">
+    <input type="text" name="query" placeholder="Введите запрос" size="50">
+    <button type="submit">Найти</button>
+</form>
+
+<hr>
+
+<h2>Результаты:</h2>
+
+<ul>
+    {% for doc, score in results %}
+        <li>{{ doc }} — {{ "%.4f"|format(score) }}</li>
+    {% endfor %}
+</ul>
+
+</body>
+</html>
